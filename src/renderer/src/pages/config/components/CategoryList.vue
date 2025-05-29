@@ -206,7 +206,35 @@ async function handleDeleteCategory(id: number, name: string) {
     </div>
 
     <main class="flex-1 overflow-y-auto p-2">
-      <ul class="grid gap-2 py-1 pb-4">
+      <!-- 空状态 -->
+      <div
+        v-if="props.categories.length === 0"
+        class="flex flex-col items-center justify-center h-full text-gray-500 py-12"
+      >
+        <svg
+          class="w-12 h-12 text-gray-300 !mb-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1"
+            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+          />
+        </svg>
+        <p class="text-sm">先添加分类才能添加片段</p>
+        <button
+          class="!mt-4 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+          @click="handleAddClick"
+        >
+          创建第一个分类
+        </button>
+      </div>
+
+      <!-- 分类列表 -->
+      <ul v-else class="grid gap-2 py-1 pb-4">
         <li
           v-for="item in props.categories"
           :key="item.id"
