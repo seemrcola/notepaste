@@ -1,28 +1,18 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { SNIPPET, CATEGORY } from '@renderer/type.d'
-import { useIpcStore, IpcDbApi } from '@renderer/store/ipc.store'
+import { ref } from 'vue'
 import { message } from '@renderer/components/ui/message'
 import { confirm } from '@renderer/components/ui/confirm'
 import DeleteSvg from './svg/delete.svg.vue'
+import SearchSvg from './svg/search.svg.vue'
+import CloseSvg from './svg/close.svg.vue'
+import AddSvg from './svg/add.svg.vue'
+import CodeSvg from './svg/code.svg.vue'
+import { useDataStore } from '@renderer/store/data.store'
 
-const ipcStore = useIpcStore()
-
-const props = defineProps<{
-  snippets: SNIPPET[]
-  currentCategory: CATEGORY | null
-}>()
-
-const emit = defineEmits<{
-  (e: 'refresh-snippets'): void
-  (e: 'select-snippet', id: number): void
-}>()
+const dataStore = useDataStore()
 
 // 搜索关键词
 const searchQuery = ref('')
-
-// 当前选中的片段ID
-const selectedSnippetId = ref(1)
 
 // 是否显示添加片段表单
 const showAddForm = ref(false)
@@ -35,24 +25,9 @@ const newSnippet = ref({
   description: ''
 })
 
-// 过滤后的片段列表
-const filteredSnippets = computed(() => {
-  if (!searchQuery.value) return props.snippets
-
-  const query = searchQuery.value.toLowerCase()
-  return props.snippets.filter(
-    (snippet) =>
-      snippet.name.toLowerCase().includes(query) ||
-      snippet.code.toLowerCase().includes(query) ||
-      snippet.language.toLowerCase().includes(query) ||
-      snippet.description.toLowerCase().includes(query)
-  )
-})
-
 // 处理片段选择
-function handleSelectSnippet(id: number) {
-  selectedSnippetId.value = id
-  emit('select-snippet', id)
+function handleSelectSnippet(index: number) {
+  dataStore.currentSnippet = dataStore.snippets[index]
 }
 
 // 处理添加片段按钮点击
@@ -69,20 +44,9 @@ function handleCancelAdd() {
 // 处理添加片段
 function handleAddSnippet() {
   if (newSnippet.value.name.trim()) {
-    if (props.currentCategory) {
-      ipcStore[IpcDbApi.SQL](
-        `INSERT INTO snippets (name, code, language, description, categoryId) VALUES (?, ?, ?, ?, ?)`,
-        'insert',
-        [
-          newSnippet.value.name,
-          newSnippet.value.code,
-          newSnippet.value.language,
-          newSnippet.value.description,
-          props.currentCategory.id
-        ]
-      )
+    if (dataStore.currentCategory) {
+      dataStore.addSnippet(newSnippet.value)
       message.success('添加代码片段成功')
-      emit('refresh-snippets')
       handleCancelAdd()
     }
     return
@@ -90,9 +54,15 @@ function handleAddSnippet() {
   message.error('请输入片段名称')
 }
 
+// 处理搜索
+async function handleSearch() {
+  await dataStore.searchSnippets(searchQuery.value)
+}
+
 // 处理搜索框清除
-function clearSearch() {
+async function clearSearch() {
   searchQuery.value = ''
+  await dataStore.searchSnippets('')
 }
 
 // 处理删除片段
@@ -105,9 +75,8 @@ async function handleDeleteSnippet(id: number, name: string) {
   })
 
   if (result) {
-    ipcStore[IpcDbApi.SQL](`DELETE FROM snippets WHERE id = ${id}`, 'del')
+    dataStore.deleteSnippet(id)
     message.success('删除代码片段成功')
-    emit('refresh-snippets')
   }
 }
 </script>
@@ -133,33 +102,15 @@ async function handleDeleteSnippet(id: number, name: string) {
           type="text"
           placeholder="搜索片段..."
           class="w-full pl-8 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          @keyup.enter="handleSearch"
         />
-        <svg
-          class="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
+        <SearchSvg />
         <button
           v-if="searchQuery"
           class="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
           @click="clearSearch"
         >
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <CloseSvg />
         </button>
       </div>
     </div>
@@ -170,32 +121,13 @@ async function handleDeleteSnippet(id: number, name: string) {
         class="add-snippet-card bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden"
       >
         <div class="flex items-center p-3 bg-blue-50">
-          <svg
-            class="w-4 h-4 text-blue-600 !mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
+          <AddSvg />
           <h3 class="font-medium text-sm text-blue-700">新建代码片段</h3>
           <button
             class="!ml-auto p-1 text-blue-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
             @click="handleCancelAdd"
           >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <CloseSvg />
           </button>
         </div>
 
@@ -263,13 +195,13 @@ async function handleDeleteSnippet(id: number, name: string) {
 
     <!-- 片段列表 -->
     <div class="flex-1 overflow-y-auto">
-      <div v-if="filteredSnippets.length > 0" class="px-1 !my-1 pb-4">
+      <div v-if="dataStore.snippets.length > 0" class="px-1 !my-1 pb-4">
         <div
-          v-for="snippet in filteredSnippets"
+          v-for="(snippet, index) in dataStore.snippets"
           :key="snippet.id"
           class="snippet-item p-4 cursor-pointer transition-all duration-200 ease-in-out rounded-lg !mx-1 !my-2 border border-transparent"
-          :class="{ selected: selectedSnippetId === snippet.id }"
-          @click="handleSelectSnippet(snippet.id)"
+          :class="{ selected: dataStore.currentSnippet?.id === snippet.id }"
+          @click="handleSelectSnippet(index)"
         >
           <div class="flex items-start justify-between !mb-3">
             <div class="flex-1 min-w-0">
@@ -303,19 +235,7 @@ async function handleDeleteSnippet(id: number, name: string) {
 
       <!-- 空状态 -->
       <div v-else class="flex flex-col items-center justify-center h-full text-gray-500 py-12">
-        <svg
-          class="w-12 h-12 text-gray-300 !mb-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1"
-            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-          />
-        </svg>
+        <CodeSvg />
         <p class="text-sm">没有找到代码片段</p>
         <button
           class="!mt-4 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"

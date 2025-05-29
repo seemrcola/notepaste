@@ -1,16 +1,26 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { SNIPPET } from '@renderer/type.d'
+import SettingsSvg from './svg/settings.svg.vue'
+import FullscreenSvg from './svg/fullscreen.svg.vue'
+import ExitFullscreenSvg from './svg/exit-fullscreen.svg.vue'
+import EditSvg from './svg/edit.svg.vue'
+import CheckSvg from './svg/check.svg.vue'
+import MinusSvg from './svg/minus.svg.vue'
+import PlusSvg from './svg/plus.svg.vue'
+import CopySvg from './svg/copy.svg.vue'
+import { message } from '@renderer/components/ui/message'
+import { useDataStore } from '@renderer/store/data.store'
 
-const props = defineProps<{
-  snippet: SNIPPET | null
-}>()
+const dataStore = useDataStore()
 
 // 是否显示编辑器选项面板
 const showOptions = ref(false)
 
 // 是否处于全屏模式
 const isFullscreen = ref(false)
+
+// 是否处于编辑模式
+const isEditMode = ref(false)
 
 // 编辑器字体大小
 const fontSize = ref(12)
@@ -21,6 +31,9 @@ const backgroundTheme = ref('light')
 // 复制状态
 const isCopied = ref(false)
 
+// 编辑中的代码内容
+const editingCode = ref('')
+
 // 背景主题选项
 const backgroundThemes = [
   { id: 'light', name: '浅色', class: 'bg-gray-50', color: 'bg-gray-200' },
@@ -30,40 +43,54 @@ const backgroundThemes = [
 ]
 
 // 增加字体大小
-const increaseFontSize = () => {
+function increaseFontSize() {
   if (fontSize.value < 24) {
     fontSize.value += 1
   }
 }
 
 // 减小字体大小
-const decreaseFontSize = () => {
+function decreaseFontSize() {
   if (fontSize.value > 10) {
     fontSize.value -= 1
   }
 }
 
 // 切换选项面板
-const toggleOptions = () => {
+function toggleOptions() {
   showOptions.value = !showOptions.value
 }
 
 // 切换全屏模式
-const toggleFullscreen = () => {
+function toggleFullscreen() {
   isFullscreen.value = !isFullscreen.value
 }
 
+// 切换编辑模式
+function toggleEditMode() {
+  if (!isEditMode.value) {
+    // 进入编辑模式，初始化编辑内容
+    editingCode.value = dataStore.currentSnippet?.code || ''
+  } else {
+    // 保存改动 - 使用参数化查询避免SQL注入
+    dataStore.updateSnippet(dataStore.currentSnippet?.id as number, editingCode.value)
+    message.success('保存成功')
+  }
+  isEditMode.value = !isEditMode.value
+}
+
 // 切换背景主题
-const changeBackgroundTheme = (themeId) => {
+function changeBackgroundTheme(themeId: string) {
   backgroundTheme.value = themeId
 }
 
 // 复制代码到剪贴板
-const copyCode = async () => {
-  if (!props.snippet?.code) return
+async function copyCode() {
+  // 编辑模式下不触发复制
+  if (isEditMode.value || !dataStore.currentSnippet?.code) return
 
   try {
-    await navigator.clipboard.writeText(props.snippet.code)
+    await navigator.clipboard.writeText(dataStore.currentSnippet?.code || '')
     isCopied.value = true
 
     // 2秒后重置复制状态
@@ -75,9 +102,16 @@ const copyCode = async () => {
   }
 }
 
+// 处理代码容器点击
+function handleCodeContainerClick() {
+  if (!isEditMode.value) {
+    copyCode()
+  }
+}
+
 // 计算代码行数
 const lineCount = computed(() => {
-  return props.snippet?.code.split('\n').length || 0
+  return dataStore.currentSnippet?.code.split('\n').length || 0
 })
 
 // 获取当前背景主题类
@@ -88,6 +122,11 @@ const currentThemeClass = computed(() => {
 // 获取文本颜色类
 const textColorClass = computed(() => {
   return backgroundTheme.value === 'dark' ? 'text-gray-100' : 'text-gray-800'
+})
+
+// 获取显示的代码内容
+const displayCode = computed(() => {
+  return isEditMode.value ? editingCode.value : dataStore.currentSnippet?.code || ''
 })
 </script>
 
@@ -102,7 +141,14 @@ const textColorClass = computed(() => {
         <div
           class="language-badge !ml-4 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
         >
-          {{ snippet?.language }}
+          {{ dataStore.currentSnippet?.language }}
+        </div>
+        <!-- 编辑模式指示器 -->
+        <div
+          v-if="isEditMode"
+          class="!ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium"
+        >
+          编辑中
         </div>
       </div>
 
@@ -112,26 +158,7 @@ const textColorClass = computed(() => {
           title="编辑器选项"
           @click="toggleOptions"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-            />
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
+          <SettingsSvg />
         </button>
 
         <button
@@ -139,36 +166,23 @@ const textColorClass = computed(() => {
           :title="isFullscreen ? '退出全屏' : '全屏模式'"
           @click="toggleFullscreen"
         >
-          <svg
-            v-if="!isFullscreen"
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
-            />
-          </svg>
-          <svg
-            v-else
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <FullscreenSvg v-if="!isFullscreen" />
+          <ExitFullscreenSvg v-else />
+        </button>
+
+        <!-- 编辑模式切换按钮 -->
+        <button
+          class="editor-button p-2 rounded-lg transition-all duration-200"
+          :class="
+            isEditMode
+              ? 'bg-green-100 text-green-700 hover:bg-green-200'
+              : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+          "
+          :title="isEditMode ? '退出编辑模式' : '进入编辑模式'"
+          @click="toggleEditMode"
+        >
+          <EditSvg v-if="!isEditMode" />
+          <CheckSvg v-else />
         </button>
       </div>
     </header>
@@ -189,33 +203,19 @@ const textColorClass = computed(() => {
               :disabled="fontSize <= 10"
               @click="decreaseFontSize"
             >
-              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  d="M20 12H4"
-                />
-              </svg>
+              <MinusSvg />
             </button>
 
-            <span class="text-xs font-bold text-gray-800 !min-w-[24px] text-center px-1">{{
-              fontSize
-            }}</span>
+            <span class="text-xs font-bold text-gray-800 !min-w-[24px] text-center px-1">
+              {{ fontSize }}
+            </span>
 
             <button
               class="flex items-center justify-center w-6 h-6 rounded-full text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
               :disabled="fontSize >= 24"
               @click="increaseFontSize"
             >
-              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
+              <PlusSvg />
             </button>
           </div>
         </div>
@@ -254,46 +254,52 @@ const textColorClass = computed(() => {
 
     <main class="flex-1 overflow-hidden relative">
       <div
-        class="code-container h-full overflow-auto p-4 font-mono transition-colors duration-300 cursor-pointer relative group"
-        :class="[currentThemeClass, textColorClass]"
-        title="点击复制代码"
-        @click="copyCode"
+        class="code-container h-full overflow-auto p-4 font-mono transition-colors duration-300 relative group"
+        :class="[currentThemeClass, textColorClass, isEditMode ? 'cursor-text' : 'cursor-pointer']"
+        :title="isEditMode ? '编辑模式' : '点击复制代码'"
+        @click="handleCodeContainerClick"
       >
         <!-- 复制提示 -->
         <div
           v-if="isCopied"
           class="absolute top-4 right-4 bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg z-10 flex items-center space-x-2 animate-fade-in"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 13l4 4L19 7"
-            ></path>
-          </svg>
+          <CheckSvg />
           <span class="text-sm font-medium">已复制到剪贴板</span>
         </div>
 
         <!-- 悬停提示 -->
         <div
+          v-if="!isEditMode"
           class="absolute top-4 right-4 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center space-x-2"
           :class="{ hidden: isCopied }"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-            ></path>
-          </svg>
+          <CopySvg />
           <span class="text-sm">点击复制</span>
         </div>
 
-        <pre class="code-editor leading-relaxed" :style="{ fontSize: `${fontSize}px` }"
-          >{{ snippet?.code }}
-        </pre>
+        <!-- 编辑模式提示 -->
+        <div
+          v-if="isEditMode"
+          class="absolute top-4 right-4 bg-green-500 bg-opacity-90 text-white px-3 py-2 rounded-lg shadow-lg z-10 flex items-center space-x-2"
+        >
+          <EditSvg />
+          <span class="text-sm">编辑模式</span>
+        </div>
+
+        <!-- 代码编辑区域 -->
+        <textarea
+          v-if="isEditMode"
+          v-model="editingCode"
+          class="code-editor w-full h-full resize-none border-none outline-none bg-transparent leading-relaxed"
+          :style="{ fontSize: `${fontSize}px` }"
+          @click.stop
+        ></textarea>
+
+        <!-- 代码显示区域 -->
+        <div v-else class="code-editor leading-relaxed" :style="{ fontSize: `${fontSize}px` }">
+          {{ displayCode }}
+        </div>
       </div>
     </main>
 
@@ -303,7 +309,9 @@ const textColorClass = computed(() => {
       <div class="flex items-center space-x-4">
         <span>{{ lineCount }} </span>
         <span class="!mx-2 text-gray-500">行</span>
-        <span class="px-2 py-1 bg-amber-200 rounded-md">{{ snippet?.language }}</span>
+        <span class="px-2 py-1 bg-amber-200 rounded-md">
+          {{ dataStore.currentSnippet?.language }}
+        </span>
       </div>
       <div class="text-xs text-gray-500 px-2 py-1 bg-amber-200 rounded-md">
         字体: {{ fontSize }}px | 主题:
@@ -334,12 +342,32 @@ const textColorClass = computed(() => {
 }
 
 .code-editor {
+  width: 100%;
+  height: 100%;
   tab-size: 2;
   white-space: pre;
   overflow-wrap: normal;
   overflow-x: auto;
   padding: 0;
   margin: 0;
+}
+
+/* 编辑模式下的 textarea 样式 */
+.code-editor[contenteditable='false'] {
+  white-space: pre-wrap;
+}
+
+textarea.code-editor {
+  font-family: inherit;
+  tab-size: 2;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-wrap: normal;
+  color: inherit;
+}
+
+textarea.code-editor:focus {
+  outline: none;
 }
 
 .editor-button {

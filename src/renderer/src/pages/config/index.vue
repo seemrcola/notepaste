@@ -2,83 +2,26 @@
 import CategoryList from './components/CategoryList.vue'
 import CodeEditor from './components/CodeEditor.vue'
 import Snippet from './components/SnippetList.vue'
-import { ref, onMounted } from 'vue'
-import type { CATEGORY, SNIPPET } from '@renderer/type.d'
-import { useIpcStore, IpcDbApi } from '@renderer/store/ipc.store'
+import { useDataStore } from '@renderer/store/data.store'
+import { onMounted } from 'vue'
 
-const ipcStore = useIpcStore()
-
-const categories = ref<CATEGORY[]>([])
-const currentCategory = ref<CATEGORY | null>(null)
-const snippets = ref<SNIPPET[]>([])
-const currentSnippet = ref<SNIPPET | null>(null)
-
-function loadSelectedCategory() {
-  // sql语句查询 查找所有
-  ipcStore[IpcDbApi.SQL]('SELECT * FROM categories', 'findAll')
-    .then((res) => {
-      categories.value = res as CATEGORY[]
-      currentCategory.value = categories.value[0] || null
-      if (currentCategory.value) loadSnippets()
-    })
-    .catch((err) => {
-      console.log(err)
-    })
-}
-
-function loadSnippets() {
-  // sql语句查询 查找所有id为currentCategory.value?.id的代码片段
-  ipcStore[IpcDbApi.SQL](
-    `SELECT * FROM snippets WHERE categoryId = ${currentCategory.value?.id}`,
-    'findAll'
-  )
-    .then((res) => {
-      snippets.value = res as SNIPPET[]
-      currentSnippet.value = snippets.value[0] || null
-    })
-    .catch((err) => {
-      console.log(err)
-    })
-}
-
-// 刷新分类列表
-function handleRefreshCategories() {
-  loadSelectedCategory()
-}
-// 选择分类
-function handleSelectCategory(id: number) {
-  currentCategory.value = categories.value.find((category) => category.id === id) || null
-  if (currentCategory.value) loadSnippets()
-}
-// 选择代码片段
-function handleSelectSnippet(id: number) {
-  currentSnippet.value = snippets.value.find((snippet) => snippet.id === id) || null
-}
+const dataStore = useDataStore()
 
 onMounted(() => {
-  loadSelectedCategory()
+  dataStore.getAllCategories()
 })
 </script>
 
 <template>
   <div class="grid-container">
     <div class="grid-item category-area">
-      <CategoryList
-        :categories="categories"
-        @refresh-categories="handleRefreshCategories"
-        @select-category="handleSelectCategory"
-      />
+      <CategoryList :categories="dataStore.categories" />
     </div>
     <div class="grid-item snippet-area">
-      <Snippet
-        :snippets="snippets"
-        :current-category="currentCategory"
-        @refresh-snippets="loadSnippets"
-        @select-snippet="handleSelectSnippet"
-      />
+      <Snippet :snippets="dataStore.snippets" :current-category="dataStore.currentCategory" />
     </div>
     <div class="grid-item editor-area">
-      <CodeEditor :snippet="currentSnippet" />
+      <CodeEditor :snippet="dataStore.currentSnippet" />
     </div>
   </div>
 </template>

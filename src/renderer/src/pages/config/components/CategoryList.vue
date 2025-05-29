@@ -3,22 +3,14 @@ import { ref } from 'vue'
 import AddCategorySvg from './svg/add-category.svg.vue'
 import AddSvg from './svg/add.svg.vue'
 import DeleteSvg from './svg/delete.svg.vue'
-import { useIpcStore, IpcDbApi } from '@renderer/store/ipc.store'
+import CloseSvg from './svg/close.svg.vue'
+import FolderSvg from './svg/folder.svg.vue'
 import { message } from '@renderer/components/ui/message'
 import { confirm } from '@renderer/components/ui/confirm'
 import type { CATEGORY } from '@renderer/type.d'
+import { useDataStore } from '@renderer/store/data.store'
 
-const ipcStore = useIpcStore()
-const props = defineProps<{
-  categories: CATEGORY[]
-}>()
-const emit = defineEmits<{
-  (e: 'refresh-categories'): void
-  (e: 'select-category', id: number): void
-}>()
-
-// 当前选中的分类ID
-const selectedCategoryId = ref(1)
+const dataStore = useDataStore()
 
 // 是否显示添加分类表单
 const showAddForm = ref(false)
@@ -30,12 +22,6 @@ const newCategoryName = ref('')
 const editingCategoryId = ref<number | null>(null)
 const editingCategoryName = ref('')
 const originalCategoryName = ref('')
-
-// 处理分类选择
-function handleSelectCategory(id: number) {
-  selectedCategoryId.value = id
-  emit('select-category', id)
-}
 
 // 处理添加分类按钮点击
 function handleAddClick() {
@@ -56,15 +42,10 @@ function handleCancelAdd() {
 }
 
 // 添加分类
-function handleAddCategory() {
+async function handleAddCategory() {
   if (newCategoryName.value.trim()) {
-    ipcStore[IpcDbApi.SQL](
-      `INSERT INTO categories (name) VALUES ('${newCategoryName.value}')`,
-      'insert'
-    )
+    await dataStore.addCategory(newCategoryName.value.trim())
     message.success('添加分类成功')
-    // 刷新分类列表
-    emit('refresh-categories')
     showAddForm.value = false
     newCategoryName.value = ''
   }
@@ -86,17 +67,13 @@ function handleDoubleClickCategory(category: CATEGORY) {
 }
 
 // 保存编辑的分类名称
-function handleSaveEdit(id: number) {
+async function handleSaveEdit(id: number) {
   const trimmedName = editingCategoryName.value.trim()
 
   // 检查名称是否有效且是否发生了变化
   if (trimmedName && trimmedName !== originalCategoryName.value) {
-    ipcStore[IpcDbApi.SQL](
-      `UPDATE categories SET name = '${trimmedName}' WHERE id = ${id}`,
-      'update'
-    )
+    await dataStore.updateCategory(id, trimmedName)
     message.success('修改分类名称成功')
-    emit('refresh-categories')
   }
 
   // 重置编辑状态
@@ -132,12 +109,13 @@ async function handleDeleteCategory(id: number, name: string) {
 
   if (result) {
     // 删除分类
-    ipcStore[IpcDbApi.SQL](`DELETE FROM categories WHERE id = ${id}`, 'del')
-    // 删除分类下的所有代码片段
-    ipcStore[IpcDbApi.SQL](`DELETE FROM snippets WHERE categoryId = ${id}`, 'del')
+    await dataStore.deleteCategory(id)
     message.success('删除分类成功')
-    emit('refresh-categories')
   }
+}
+
+function handleSelectCategory(index: number) {
+  dataStore.currentCategory = dataStore.categories[index]
 }
 </script>
 
@@ -165,14 +143,7 @@ async function handleDeleteCategory(id: number, name: string) {
             class="!ml-auto p-1 text-blue-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
             @click="handleCancelAdd"
           >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <CloseSvg />
           </button>
         </div>
 
@@ -208,22 +179,10 @@ async function handleDeleteCategory(id: number, name: string) {
     <main class="flex-1 overflow-y-auto p-2">
       <!-- 空状态 -->
       <div
-        v-if="props.categories.length === 0"
+        v-if="dataStore.categories.length === 0"
         class="flex flex-col items-center justify-center h-full text-gray-500 py-12"
       >
-        <svg
-          class="w-12 h-12 text-gray-300 !mb-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1"
-            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-          />
-        </svg>
+        <FolderSvg />
         <p class="text-sm">先添加分类才能添加片段</p>
         <button
           class="!mt-4 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
@@ -236,11 +195,11 @@ async function handleDeleteCategory(id: number, name: string) {
       <!-- 分类列表 -->
       <ul v-else class="grid gap-2 py-1 pb-4">
         <li
-          v-for="item in props.categories"
+          v-for="(item, index) in dataStore.categories"
           :key="item.id"
           class="category-item flex items-center p-2 rounded-md cursor-pointer transition-all duration-200 ease-in-out"
-          :class="{ selected: selectedCategoryId === item.id }"
-          @click="handleSelectCategory(item.id)"
+          :class="{ selected: dataStore.currentCategory?.id === item.id }"
+          @click="handleSelectCategory(index)"
           @dblclick="handleDoubleClickCategory(item)"
         >
           <div
