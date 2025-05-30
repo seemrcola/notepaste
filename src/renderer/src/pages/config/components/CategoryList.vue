@@ -10,7 +10,9 @@ import { message } from '@renderer/components/ui/message'
 import { confirm } from '@renderer/components/ui/confirm'
 import type { CATEGORY } from '@renderer/type.d'
 import { useDataStore } from '@renderer/store/data.store'
+import { useIpcStore, IpcDbApi } from '@renderer/store/ipc.store'
 
+const ipcStore = useIpcStore()
 const dataStore = useDataStore()
 
 // 是否显示添加分类表单
@@ -138,38 +140,9 @@ function handleSelectCategory(index: number) {
   dataStore.currentCategory = dataStore.categories[index]
 }
 
-// 导出功能
-async function exportCategories() {
-  try {
-    const result = await window.IpcDbApi['db:export-categories-csv']()
-    if (result.success) {
-      message.success('分类数据导出成功')
-    } else {
-      message.error(result.message || '导出失败')
-    }
-  } catch (error) {
-    message.error('导出过程中发生错误')
-  }
-  showExportMenu.value = false
-}
-
-async function exportSnippets() {
-  try {
-    const result = await window.IpcDbApi['db:export-snippets-csv']()
-    if (result.success) {
-      message.success('代码片段数据导出成功')
-    } else {
-      message.error(result.message || '导出失败')
-    }
-  } catch (error) {
-    message.error('导出过程中发生错误')
-  }
-  showExportMenu.value = false
-}
-
 async function exportAll() {
   try {
-    const result = await window.IpcDbApi['db:export-all-csv']()
+    const result = await ipcStore[IpcDbApi.EXPORT]()
     if (result.success) {
       message.success('所有数据导出成功')
     } else {
@@ -194,7 +167,7 @@ async function exportAll() {
             title="导出数据"
             @click="showExportMenu = !showExportMenu"
           >
-            <ExportSvg class="w-4 h-4 text-green-600" />
+            <ExportSvg class="w-5 h-5 text-green-600" />
           </button>
 
           <!-- 下拉菜单 -->
@@ -202,18 +175,6 @@ async function exportAll() {
             v-if="showExportMenu"
             class="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-40"
           >
-            <button
-              class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors border-b border-gray-100"
-              @click="exportCategories"
-            >
-              导出分类
-            </button>
-            <button
-              class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors border-b border-gray-100"
-              @click="exportSnippets"
-            >
-              导出代码片段
-            </button>
             <button
               class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors rounded-b-lg"
               @click="exportAll"
