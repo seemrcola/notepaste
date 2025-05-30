@@ -8,6 +8,9 @@ const IPC_DB_API = 'IpcDbApi'
 const IpcDbApi = {
   [IpcDbListenerEnum.SQL]: (sql: string, type: SQLType, params?: unknown[]) => {
     return ipcRenderer.invoke(IpcDbListenerEnum.SQL, sql, type, params)
+  },
+  [IpcDbListenerEnum.EXPORT]: () => {
+    return ipcRenderer.invoke(IpcDbListenerEnum.EXPORT)
   }
 }
 

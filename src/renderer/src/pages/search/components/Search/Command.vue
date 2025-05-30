@@ -2,8 +2,7 @@
 import { watch, onMounted, onUnmounted } from 'vue'
 import { commandData } from './data/commandData'
 import { useMove } from './utils/useMove'
-import { useIpcStore, IpcSearchApi } from '@renderer/store/ipc.store'
-
+import { useIpcStore, IpcSearchApi, IpcDbApi } from '@renderer/store/ipc.store'
 const ipcStore = useIpcStore()
 
 const props = defineProps<{
@@ -21,14 +20,19 @@ function keydown(e: KeyboardEvent) {
   const currentCommand = props.items[curIndex.value]
   // 按下Enter键 执行命令
   if (e.key === 'Enter' && currentCommand.id === 'config') {
-    console.log('执行命令')
     ipcStore[IpcSearchApi.OPEN_CONFIG_WINDOW]()
+  }
+  if (e.key === 'Enter' && currentCommand.id === 'export') {
+    ipcStore[IpcDbApi.EXPORT]()
   }
 }
 
 function handleClick(item: (typeof commandData)[number]) {
   if (item.id === 'config') {
     ipcStore[IpcSearchApi.OPEN_CONFIG_WINDOW]()
+  }
+  if (item.id === 'export') {
+    ipcStore[IpcDbApi.EXPORT]()
   }
 }
 

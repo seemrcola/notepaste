@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import AddCategorySvg from './svg/add-category.svg.vue'
 import AddSvg from './svg/add.svg.vue'
 import DeleteSvg from './svg/delete.svg.vue'
 import CloseSvg from './svg/close.svg.vue'
 import FolderSvg from './svg/folder.svg.vue'
+import ExportSvg from './svg/export.svg.vue'
 import { message } from '@renderer/components/ui/message'
 import { confirm } from '@renderer/components/ui/confirm'
 import type { CATEGORY } from '@renderer/type.d'
@@ -15,6 +16,9 @@ const dataStore = useDataStore()
 // 是否显示添加分类表单
 const showAddForm = ref(false)
 
+// 导出下拉菜单状态
+const showExportMenu = ref(false)
+
 // 新分类名称
 const newCategoryName = ref('')
 
@@ -22,6 +26,22 @@ const newCategoryName = ref('')
 const editingCategoryId = ref<number | null>(null)
 const editingCategoryName = ref('')
 const originalCategoryName = ref('')
+
+// 点击外部关闭下拉菜单
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  if (!target.closest('.relative')) {
+    showExportMenu.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 // 处理添加分类按钮点击
 function handleAddClick() {
@@ -117,19 +137,100 @@ async function handleDeleteCategory(id: number, name: string) {
 function handleSelectCategory(index: number) {
   dataStore.currentCategory = dataStore.categories[index]
 }
+
+// 导出功能
+async function exportCategories() {
+  try {
+    const result = await window.IpcDbApi['db:export-categories-csv']()
+    if (result.success) {
+      message.success('分类数据导出成功')
+    } else {
+      message.error(result.message || '导出失败')
+    }
+  } catch (error) {
+    message.error('导出过程中发生错误')
+  }
+  showExportMenu.value = false
+}
+
+async function exportSnippets() {
+  try {
+    const result = await window.IpcDbApi['db:export-snippets-csv']()
+    if (result.success) {
+      message.success('代码片段数据导出成功')
+    } else {
+      message.error(result.message || '导出失败')
+    }
+  } catch (error) {
+    message.error('导出过程中发生错误')
+  }
+  showExportMenu.value = false
+}
+
+async function exportAll() {
+  try {
+    const result = await window.IpcDbApi['db:export-all-csv']()
+    if (result.success) {
+      message.success('所有数据导出成功')
+    } else {
+      message.error(result.message || '导出失败')
+    }
+  } catch (error) {
+    message.error('导出过程中发生错误')
+  }
+  showExportMenu.value = false
+}
 </script>
 
 <template>
   <div class="h-full w-full text-gray-700 flex flex-col">
     <header class="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
       <h2 class="text-sm !font-bold">分类列表</h2>
-      <button
-        class="add-button flex items-center justify-center p-1 rounded-full hover:bg-blue-50 transition-colors"
-        title="添加新分类"
-        @click="handleAddClick"
-      >
-        <AddCategorySvg class="w-5 h-5 text-blue-600" />
-      </button>
+      <div class="flex items-center gap-2">
+        <!-- 导出下拉菜单 -->
+        <div class="relative">
+          <button
+            class="export-button flex items-center justify-center p-1 rounded-full hover:bg-green-50 transition-colors"
+            title="导出数据"
+            @click="showExportMenu = !showExportMenu"
+          >
+            <ExportSvg class="w-4 h-4 text-green-600" />
+          </button>
+
+          <!-- 下拉菜单 -->
+          <div
+            v-if="showExportMenu"
+            class="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-40"
+          >
+            <button
+              class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors border-b border-gray-100"
+              @click="exportCategories"
+            >
+              导出分类
+            </button>
+            <button
+              class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors border-b border-gray-100"
+              @click="exportSnippets"
+            >
+              导出代码片段
+            </button>
+            <button
+              class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors rounded-b-lg"
+              @click="exportAll"
+            >
+              导出所有数据
+            </button>
+          </div>
+        </div>
+
+        <button
+          class="add-button flex items-center justify-center p-1 rounded-full hover:bg-blue-50 transition-colors"
+          title="添加新分类"
+          @click="handleAddClick"
+        >
+          <AddCategorySvg class="w-5 h-5 text-blue-600" />
+        </button>
+      </div>
     </header>
 
     <div v-if="showAddForm" class="add-form-container px-3 pt-2 pb-1 animate-slide-down">

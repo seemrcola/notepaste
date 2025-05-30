@@ -8,7 +8,8 @@ export enum IpcSearchApi {
 }
 
 export enum IpcDbApi {
-  SQL = 'db:sql'
+  SQL = 'db:sql',
+  EXPORT = 'db:export'
 }
 
 export const useIpcStore = defineStore('ipc', {
@@ -25,6 +26,9 @@ export const useIpcStore = defineStore('ipc', {
     },
     async [IpcDbApi.SQL](sql: string, type: SQLType, params?: unknown[]) {
       return window.IpcDbApi[IpcDbApi.SQL](sql, type, params)
+    },
+    async [IpcDbApi.EXPORT]() {
+      return window.IpcDbApi[IpcDbApi.EXPORT]()
     }
   }
 })

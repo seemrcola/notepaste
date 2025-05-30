@@ -11,6 +11,7 @@ declare global {
     }
     IpcDbApi: {
       'db:sql': (sql: string, type: SQLType, params?: unknown[]) => Promise<unknown> // 执行sql
+      'db:export': () => Promise<{ success: boolean; message?: string }> // 导出所有数据为CSV
     }
   }
 }
