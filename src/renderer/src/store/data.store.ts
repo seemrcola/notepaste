@@ -90,8 +90,11 @@ export const useDataStore = defineStore('data', () => {
     )
     console.log(result, 'result')
     snippets.value = result as SNIPPET[]
-    if (mode === 'init' || mode === 'add' || mode === 'del') {
+    if (mode === 'init' || mode === 'del') {
       currentSnippet.value = snippets.value[0] || null
+    }
+    if (mode === 'add') {
+      currentSnippet.value = snippets.value[snippets.value.length - 1] || null
     }
     if (mode === 'update') {
       console.log(id, 'id')
