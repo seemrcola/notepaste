@@ -8,6 +8,7 @@ import CloseSvg from './svg/close.svg.vue'
 import AddSvg from './svg/add.svg.vue'
 import CodeSvg from './svg/code.svg.vue'
 import { useDataStore } from '@renderer/store/data.store'
+import { SNIPPET } from '@renderer/type'
 
 const dataStore = useDataStore()
 
@@ -24,6 +25,9 @@ const newSnippet = ref({
   language: '',
   description: ''
 })
+
+// 拖拽的片段
+const dragSnippet = ref<SNIPPET | null>(null)
 
 // 处理片段选择
 function handleSelectSnippet(index: number) {
@@ -78,6 +82,32 @@ async function handleDeleteSnippet(id: number, name: string) {
     dataStore.deleteSnippet(id)
     message.success('删除代码片段成功')
   }
+}
+
+// 拖拽改变分组
+function handleDragStart(event: DragEvent, snippet: SNIPPET) {
+  dragSnippet.value = snippet
+
+  // 设置拖拽数据
+  if (event.dataTransfer) {
+    // 数据设置
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('application/json', JSON.stringify(snippet))
+  } else {
+    console.error('❌ DataTransfer 不可用')
+  }
+}
+
+// 拖拽结束处理
+function handleDragEnd(event: DragEvent) {
+  console.log('拖拽结束')
+  const dragElement = event.currentTarget as HTMLElement
+  if (dragElement) {
+    dragElement.style.opacity = '1'
+    dragElement.style.transform = 'scale(1)'
+    dragElement.style.transition = 'all 0.2s ease'
+  }
+  dragSnippet.value = null
 }
 </script>
 
@@ -205,7 +235,15 @@ async function handleDeleteSnippet(id: number, name: string) {
         >
           <div class="flex items-start justify-between !mb-3">
             <div class="flex-1 min-w-0">
-              <h3 class="text-sm font-semibold text-gray-800 truncate">{{ snippet.name }}</h3>
+              <h3
+                class="text-sm font-semibold text-gray-800 truncate drag-handle"
+                draggable="true"
+                @dragstart="handleDragStart($event, snippet)"
+                @dragend="handleDragEnd"
+                @click.stop
+              >
+                {{ snippet.name }}
+              </h3>
               <p class="text-xs text-gray-500 !mt-1">{{ snippet.description }}</p>
             </div>
             <span
@@ -266,6 +304,7 @@ async function handleDeleteSnippet(id: number, name: string) {
 .snippet-item::after {
   content: '';
   position: absolute;
+  z-index: -1;
   left: 0;
   top: 0;
   height: 100%;
@@ -283,6 +322,21 @@ async function handleDeleteSnippet(id: number, name: string) {
   background-color: #eff6ff;
   border-left: none;
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.15);
+}
+
+.drag-handle {
+  cursor: grab;
+  -webkit-user-select: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle[draggable='true']:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
 }
 
 .tool-button {

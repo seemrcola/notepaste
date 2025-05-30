@@ -97,7 +97,6 @@ export const useDataStore = defineStore('data', () => {
       currentSnippet.value = snippets.value[snippets.value.length - 1] || null
     }
     if (mode === 'update') {
-      console.log(id, 'id')
       currentSnippet.value = snippets.value.find((s) => s.id === updateId) || null
       console.log(currentSnippet.value, 'currentSnippet.value')
     }
@@ -152,6 +151,16 @@ export const useDataStore = defineStore('data', () => {
     await getAllSnippets(currentCategory.value?.id as number, 'update', id)
   }
 
+  // 移动代码片段到其他分类
+  const moveSnippetToCategory = async (snippetId: number, newCategoryId: number) => {
+    await ipcStore[IpcDbApi.SQL](`UPDATE snippets SET categoryId = ? WHERE id = ?`, 'update', [
+      newCategoryId,
+      snippetId
+    ])
+    // 刷新当前分类的代码片段列表
+    await getAllSnippets(currentCategory.value?.id as number, 'del')
+  }
+
   // 返回 state 和 actions
   return {
     // State
@@ -169,6 +178,7 @@ export const useDataStore = defineStore('data', () => {
     addSnippet,
     searchSnippets,
     deleteSnippet,
-    updateSnippet
+    updateSnippet,
+    moveSnippetToCategory
   }
 })

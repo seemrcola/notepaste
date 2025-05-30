@@ -8,6 +8,25 @@ body {
   background: transparent !important; /* 透明背景 */
 }
 
+/* 拖拽相关样式 */
+* {
+  -webkit-user-drag: auto;
+}
+
+[draggable="true"] {
+  -webkit-user-drag: element;
+  cursor: grab;
+}
+
+[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* 防止拖拽时选中文本 */
+.drag-handle * {
+  pointer-events: none;
+}
+
 .drag {
   -webkit-app-region: drag;
 }

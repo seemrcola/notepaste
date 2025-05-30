@@ -29,6 +29,9 @@ const editingCategoryId = ref<number | null>(null)
 const editingCategoryName = ref('')
 const originalCategoryName = ref('')
 
+// 拖拽相关状态
+const dragOverCategoryId = ref<number | null>(null)
+
 // 点击外部关闭下拉菜单
 function handleClickOutside(event: MouseEvent) {
   const target = event.target as HTMLElement
@@ -36,14 +39,6 @@ function handleClickOutside(event: MouseEvent) {
     showExportMenu.value = false
   }
 }
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
 
 // 处理添加分类按钮点击
 function handleAddClick() {
@@ -153,6 +148,66 @@ async function exportAll() {
   }
   showExportMenu.value = false
 }
+
+// 处理拖拽进入分类
+function handleDragEnter(event: DragEvent, categoryId: number) {
+  event.preventDefault()
+  dragOverCategoryId.value = categoryId
+}
+
+// 处理拖拽离开分类
+function handleDragLeave(event: DragEvent) {
+  event.preventDefault()
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  const x = event.clientX
+  const y = event.clientY
+
+  if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+    dragOverCategoryId.value = null
+  }
+}
+
+// 处理拖拽悬停
+function handleDragOver(event: DragEvent) {
+  event.preventDefault()
+  event.dataTransfer!.dropEffect = 'move'
+}
+
+// 处理放置
+async function handleDrop(event: DragEvent, categoryId: number) {
+  event.preventDefault()
+  dragOverCategoryId.value = null
+
+  try {
+    const snippetData = event.dataTransfer?.getData('application/json')
+
+    if (snippetData) {
+      const snippet = JSON.parse(snippetData)
+
+      // 如果拖拽到相同分类，不做任何操作
+      if (snippet.categoryId === categoryId) {
+        message.info('代码片段已在当前分类中')
+        return
+      }
+
+      // 更新代码片段的分类
+      await dataStore.moveSnippetToCategory(snippet.id, categoryId)
+      message.success(`已将"${snippet.name}"移动到新分类`)
+    } else {
+      message.error('拖拽数据丢失，请重试')
+    }
+  } catch (error) {
+    message.error('移动代码片段失败')
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
@@ -260,9 +315,16 @@ async function exportAll() {
           v-for="(item, index) in dataStore.categories"
           :key="item.id"
           class="category-item flex items-center p-2 rounded-md cursor-pointer transition-all duration-200 ease-in-out"
-          :class="{ selected: dataStore.currentCategory?.id === item.id }"
+          :class="{
+            selected: dataStore.currentCategory?.id === item.id,
+            'drag-over': dragOverCategoryId === item.id
+          }"
           @click="handleSelectCategory(index)"
           @dblclick="handleDoubleClickCategory(item)"
+          @dragenter="handleDragEnter($event, item.id)"
+          @dragleave="handleDragLeave"
+          @dragover="handleDragOver"
+          @drop="handleDrop($event, item.id)"
         >
           <div
             class="category-icon w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center"
@@ -313,6 +375,9 @@ async function exportAll() {
   overflow: hidden;
   height: auto;
   min-height: 36px;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
 .category-item:hover {
@@ -338,12 +403,25 @@ async function exportAll() {
 
 .category-item.selected {
   background-color: #eff6ff;
-  border-left: none;
+  border: 2px solid transparent;
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.15);
 }
 
 .category-item.selected .category-icon {
   background-color: rgba(59, 130, 246, 0.2);
+}
+
+.category-item.drag-over {
+  background-color: #dbeafe;
+  border: 2px dashed #3b82f6;
+  transform: scale(1.02);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.category-item.drag-over .category-icon {
+  background-color: rgba(59, 130, 246, 0.3);
 }
 
 .tool-button {
