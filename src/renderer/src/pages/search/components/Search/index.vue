@@ -114,7 +114,7 @@ function handleClickOutside(event: MouseEvent) {
 function resizeWindow() {
   let size = { width: 480, height: 100 }
   if (isResultDropdownOpen.value) size = { width: 480, height: 500 }
-  if (isCommandDropdownOpen.value) size = { width: 480, height: 280 }
+  if (isCommandDropdownOpen.value) size = { width: 480, height: 320 }
 
   ipcStore[IpcSearchApi.RESIZE](size)
 }

@@ -1,10 +1,12 @@
 import { ipcMain, BrowserWindow, IpcMainEvent } from 'electron'
 import { createConfigWindow } from '../config'
+import { createSettingsWindow } from '../settings'
 
 enum IpcSearchListenerEnum {
   TOGGLE_VISIBILITY = 'search:toggle-visibility',
   WINDOW_RESIZE = 'search:window-resize',
-  OPEN_CONFIG_WINDOW = 'search:open-config-window'
+  OPEN_CONFIG_WINDOW = 'search:open-config-window',
+  OPEN_SETTINGS_WINDOW = 'search:open-settings-window'
 }
 
 // 添加ipc监听
@@ -40,6 +42,12 @@ function setupIpcListeners() {
   ipcMain.on(IpcSearchListenerEnum.OPEN_CONFIG_WINDOW, () => {
     console.log('打开配置窗口')
     createConfigWindow()
+  })
+
+  // 打开设置窗口
+  ipcMain.on(IpcSearchListenerEnum.OPEN_SETTINGS_WINDOW, () => {
+    console.log('打开设置窗口')
+    createSettingsWindow()
   })
 }
 

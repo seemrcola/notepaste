@@ -46,7 +46,7 @@ function handleKeydown(e: KeyboardEvent) {
     handleClear()
   }
   // Ctrl+/ 聚焦到搜索框
-  if (e.ctrlKey && e.key === '/') {
+  if ((e.ctrlKey || e.metaKey) && e.key === '/') {
     const inputEl = document.querySelector('.search-input') as HTMLInputElement
     if (inputEl) {
       inputEl.focus()

@@ -25,6 +25,9 @@ function keydown(e: KeyboardEvent) {
   if (e.key === 'Enter' && currentCommand.id === 'export') {
     ipcStore[IpcDbApi.EXPORT]()
   }
+  if (e.key === 'Enter' && currentCommand.id === 'settings') {
+    ipcStore[IpcSearchApi.OPEN_SETTINGS_WINDOW]()
+  }
 }
 
 function handleClick(item: (typeof commandData)[number]) {
@@ -33,6 +36,9 @@ function handleClick(item: (typeof commandData)[number]) {
   }
   if (item.id === 'export') {
     ipcStore[IpcDbApi.EXPORT]()
+  }
+  if (item.id === 'settings') {
+    ipcStore[IpcSearchApi.OPEN_SETTINGS_WINDOW]()
   }
 }
 

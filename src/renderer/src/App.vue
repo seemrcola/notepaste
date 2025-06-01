@@ -17,7 +17,6 @@
 
 <style>
 .app-container {
-  padding: 1rem;
   width: 100%;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);

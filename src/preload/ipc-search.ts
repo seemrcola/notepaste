@@ -12,6 +12,9 @@ const IpcSearchApi = {
   },
   [IpcSearchListenerEnum.OPEN_CONFIG_WINDOW]: () => {
     ipcRenderer.send(IpcSearchListenerEnum.OPEN_CONFIG_WINDOW)
+  },
+  [IpcSearchListenerEnum.OPEN_SETTINGS_WINDOW]: () => {
+    ipcRenderer.send(IpcSearchListenerEnum.OPEN_SETTINGS_WINDOW)
   }
 }
 

@@ -5,3 +5,9 @@ import Search from './components/Search/index.vue'
 <template>
   <Search />
 </template>
+
+<style>
+.app-container {
+  padding: 0.5rem;
+}
+</style>
