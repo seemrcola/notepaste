@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import SettingsSvg from './svg/settings.svg.vue'
-import FullscreenSvg from './svg/fullscreen.svg.vue'
-import ExitFullscreenSvg from './svg/exit-fullscreen.svg.vue'
-import EditSvg from './svg/edit.svg.vue'
-import CheckSvg from './svg/check.svg.vue'
-import MinusSvg from './svg/minus.svg.vue'
-import PlusSvg from './svg/plus.svg.vue'
-import CopySvg from './svg/copy.svg.vue'
 import { message } from '@renderer/components/ui/message'
 import { useDataStore } from '@renderer/store/data.store'
+import {
+  MinusSvg,
+  PlusSvg,
+  SettingsSvg,
+  FullscreenSvg,
+  ExitFullscreenSvg,
+  EditSvg,
+  CheckSvg,
+  CopySvg
+} from './svg'
 
 const dataStore = useDataStore()
 

@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { message } from '@renderer/components/ui/message'
+import {
+  SearchIcon,
+  CopyIcon,
+  ExecuteIcon,
+  ResetIcon,
+  SaveIcon,
+  KeyboardIcon
+} from './components/svg'
 
 // 设置数据
 const settings = ref({
@@ -169,39 +177,13 @@ onMounted(() => {
             <!-- SVG 图标 -->
             <div class="icon-container" :class="item.color">
               <!-- 搜索图标 -->
-              <svg
-                v-if="item.icon === 'search'"
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
+              <SearchIcon v-if="item.icon === 'search'" class="icon" />
 
               <!-- 复制图标 -->
-              <svg
-                v-else-if="item.icon === 'copy'"
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-              </svg>
+              <CopyIcon v-else-if="item.icon === 'copy'" class="icon" />
 
               <!-- 执行图标 -->
-              <svg
-                v-else-if="item.icon === 'execute'"
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <polygon points="5,3 19,12 5,21 5,3" />
-              </svg>
+              <ExecuteIcon v-else-if="item.icon === 'execute'" class="icon" />
             </div>
 
             <div>
@@ -230,21 +212,12 @@ onMounted(() => {
     <div class="bottom-panel tech-panel relative z-10">
       <div class="flex justify-between">
         <button class="btn-secondary flex-1" @click="resetToDefault">
-          <svg class="w-3.5 h-3.5 !mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-            <path d="M21 3v5h-5" />
-            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-            <path d="M3 21v-5h5" />
-          </svg>
+          <ResetIcon class="w-3.5 h-3.5 !mr-1.5" />
           重置
         </button>
         <div class="w-4"></div>
         <button class="btn-primary flex-1" @click="saveSettings">
-          <svg class="w-3.5 h-3.5 !mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-            <polyline points="17,21 17,13 7,13 7,21" />
-            <polyline points="7,3 7,8 15,8" />
-          </svg>
+          <SaveIcon class="w-3.5 h-3.5 !mr-1.5" />
           保存
         </button>
       </div>
@@ -255,12 +228,7 @@ onMounted(() => {
       <div class="recording-hint tech-card">
         <div class="!mb-4">
           <!-- 键盘图标 -->
-          <svg class="keyboard-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="2" y="6" width="20" height="12" rx="2" />
-            <circle cx="7" cy="12" r="1" />
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="17" cy="12" r="1" />
-          </svg>
+          <KeyboardIcon />
         </div>
         <div class="text-lg font-semibold text-slate-100 !mb-2">按下快捷键组合</div>
         <div class="text-sm text-slate-300">点击空白处取消</div>
@@ -576,15 +544,6 @@ onMounted(() => {
   animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.keyboard-icon {
-  width: 36px;
-  height: 36px;
-  stroke-width: 2;
-  color: #60a5fa;
-  margin: 0 auto;
-  animation: float 2s ease-in-out infinite;
-}
-
 @keyframes slideInUp {
   to {
     opacity: 1;
@@ -648,16 +607,6 @@ onMounted(() => {
   to {
     opacity: 1;
     transform: scale(1);
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
   }
 }
 </style>

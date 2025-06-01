@@ -1,17 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import AddCategorySvg from './svg/add-category.svg.vue'
-import AddSvg from './svg/add.svg.vue'
-import DeleteSvg from './svg/delete.svg.vue'
-import CloseSvg from './svg/close.svg.vue'
-import FolderSvg from './svg/folder.svg.vue'
-import ExportSvg from './svg/export.svg.vue'
 import { message } from '@renderer/components/ui/message'
 import { confirm } from '@renderer/components/ui/confirm'
 import type { CATEGORY } from '@renderer/type.d'
 import { useDataStore } from '@renderer/store/data.store'
 import { useIpcStore, IpcDbApi } from '@renderer/store/ipc.store'
-
+import { AddCategorySvg, AddSvg, DeleteSvg, CloseSvg, FolderSvg, ExportSvg } from './svg'
 const ipcStore = useIpcStore()
 const dataStore = useDataStore()
 

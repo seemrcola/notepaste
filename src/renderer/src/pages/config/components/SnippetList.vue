@@ -2,13 +2,9 @@
 import { ref } from 'vue'
 import { message } from '@renderer/components/ui/message'
 import { confirm } from '@renderer/components/ui/confirm'
-import DeleteSvg from './svg/delete.svg.vue'
-import SearchSvg from './svg/search.svg.vue'
-import CloseSvg from './svg/close.svg.vue'
-import AddSvg from './svg/add.svg.vue'
-import CodeSvg from './svg/code.svg.vue'
 import { useDataStore } from '@renderer/store/data.store'
 import { SNIPPET } from '@renderer/type'
+import { DeleteSvg, SearchSvg, CloseSvg, AddSvg, CodeSvg } from './svg'
 
 const dataStore = useDataStore()
 
