@@ -1,4 +1,4 @@
-### 快捷剪切板 （开发阶段）
+### 快捷剪切板
 基于electron开发的一款桌面应用。用于快速复制粘贴代码片段/文本片段。  
 代码第一阶段用AI写了一部分，目前在逐步优化代码。
 
@@ -31,3 +31,10 @@ cd <project-name>
 pnpm install
 pnpm dev
 ```
+
+#### 项目打包
+```bash
+pnpm build:win
+pnpm build:mac
+```
+打包之后即可使用
