@@ -1,20 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useIpcStore, IpcDbApi } from '@renderer/store/ipc.store'
 import { message } from '@renderer/components/ui/message'
-import {
-  SearchIcon,
-  CopyIcon,
-  ExecuteIcon,
-  ResetIcon,
-  SaveIcon,
-  KeyboardIcon
-} from './components/svg'
+import { SearchIcon, ResetIcon, SaveIcon, KeyboardIcon } from './components/svg'
+
+const ipcStore = useIpcStore()
 
 // 设置数据
 const settings = ref({
-  searchHotkey: 'CommandOrControl+Shift+K',
-  copyHotkey: 'CommandOrControl+C',
-  executeHotkey: 'Enter'
+  searchHotkey: 'CommandOrControl+Shift+K'
 })
 
 // 当前正在编辑的快捷键
@@ -40,18 +34,6 @@ const settingItems = [
     title: '唤起搜索',
     icon: 'search',
     color: 'text-blue-500'
-  },
-  {
-    key: 'copyHotkey',
-    title: '复制',
-    icon: 'copy',
-    color: 'text-green-500'
-  },
-  {
-    key: 'executeHotkey',
-    title: '执行命令',
-    icon: 'execute',
-    color: 'text-purple-500'
   }
 ]
 
@@ -128,29 +110,38 @@ function handleKeyUp(event: KeyboardEvent) {
 // 重置为默认值
 function resetToDefault() {
   settings.value = {
-    searchHotkey: 'CommandOrControl+Shift+K',
-    copyHotkey: 'CommandOrControl+C',
-    executeHotkey: 'Enter'
+    searchHotkey: 'CommandOrControl+Shift+K'
   }
   message.success('已重置为默认设置')
 }
 
 // 保存设置
-function saveSettings() {
-  localStorage.setItem('app-settings', JSON.stringify(settings.value))
-  message.success('设置已保存')
+async function saveSettings() {
+  // 保存设置到数据库 更新数据库内容
+  await ipcStore[IpcDbApi.SQL](`UPDATE hotkeys SET hotkey = ? WHERE name = ?`, 'update', [
+    settings.value.searchHotkey,
+    'searchHotkey'
+  ])
+  message.success('设置已保存 重启后生效')
 }
 
 // 加载设置
-function loadSettings() {
-  const saved = localStorage.getItem('app-settings')
-  if (saved) {
-    try {
-      settings.value = { ...settings.value, ...JSON.parse(saved) }
-    } catch (error) {
-      console.error('加载设置失败:', error)
+async function loadSettings() {
+  // 加载全部快捷键
+  const hotkeys = (await ipcStore[IpcDbApi.SQL](`SELECT * FROM hotkeys`, 'findAll')) as Array<{
+    id: number
+    name: string
+    hotkey: string
+    createdAt: string
+    updatedAt: string
+  }>
+  console.log('hotkeys', hotkeys)
+  // 遍历快捷键，只处理searchHotkey
+  hotkeys.forEach((hotkey) => {
+    if (hotkey.name === 'searchHotkey' && hotkey.name in settings.value) {
+      settings.value[hotkey.name as keyof typeof settings.value] = hotkey.hotkey
     }
-  }
+  })
 }
 
 onMounted(() => {
@@ -165,7 +156,7 @@ onMounted(() => {
     <div class="tech-grid"></div>
 
     <!-- 设置列表 -->
-    <div class="flex-1 overflow-y-auto p-4 space-y-6 relative z-10 tech-scrollbar">
+    <div class="flex-1 overflow-y-auto px-4 space-y-6 relative z-10 tech-scrollbar">
       <div
         v-for="(item, index) in settingItems"
         :key="item.key"
@@ -178,12 +169,6 @@ onMounted(() => {
             <div class="icon-container" :class="item.color">
               <!-- 搜索图标 -->
               <SearchIcon v-if="item.icon === 'search'" class="icon" />
-
-              <!-- 复制图标 -->
-              <CopyIcon v-else-if="item.icon === 'copy'" class="icon" />
-
-              <!-- 执行图标 -->
-              <ExecuteIcon v-else-if="item.icon === 'execute'" class="icon" />
             </div>
 
             <div>

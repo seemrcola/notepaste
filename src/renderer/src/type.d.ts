@@ -15,4 +15,12 @@ export interface SNIPPET {
   updatedAt: string
 }
 
+export interface HOTKEY {
+  id: number
+  name: string
+  hotkey: string
+  createdAt: string
+  updatedAt: string
+}
+
 export type SQLType = 'findAll' | 'findOne' | 'insert' | 'update' | 'del'

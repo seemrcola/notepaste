@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { initSearchWindow, createSearchWindow } from './search'
-import { initDb } from './db'
+import './db' // 初始化 数据库
 
 app.whenReady().then(() => {
   // 设置应用用户模型ID
@@ -12,9 +12,6 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  // 初始化 数据库
-  initDb()
 
   // 初始化 搜索窗口 （主窗口）
   initSearchWindow()

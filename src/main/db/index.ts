@@ -1,7 +1,7 @@
 import Database, * as BetterSqlite3 from 'better-sqlite3'
 import { resolve } from 'node:path'
 import { app } from 'electron'
-import { createTables } from './tables'
+import { createTables, createHotKeys } from './tables'
 import { setupIpcDb } from './ipc'
 
 function initDb() {
@@ -24,8 +24,16 @@ function initDb() {
   // 创建表
   createTables(db)
 
+  // 初始化默认快捷键数据
+  createHotKeys(db)
+
   // 设置ipc
   setupIpcDb(db)
+
+  // 返回db
+  return db
 }
 
-export { initDb }
+const db = initDb() as BetterSqlite3.Database
+
+export { db }

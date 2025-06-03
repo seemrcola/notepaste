@@ -7,7 +7,7 @@ function createWindow() {
   const win = new BrowserWindow({
     title: '配置',
     width: 360, // 宽度
-    height: 320, // 高度
+    height: 200, // 高度
     x: 100, // 初始x坐标
     y: 100, // 初始y坐标
     resizable: false,
