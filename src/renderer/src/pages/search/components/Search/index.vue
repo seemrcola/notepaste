@@ -135,7 +135,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="dropdownRef" class="w-full p-2 bg-[#1a1a1a]/60 rounded-md border border-[#fff]/30">
+  <div ref="dropdownRef" class="w-full p-2 rounded-md">
     <div class="relative w-full rounded-[4px] overflow-hidden">
       <SearchInput
         ref="searchInputRef"

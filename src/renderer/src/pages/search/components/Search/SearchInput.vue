@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount } from 'vue'
+import { ref, watch, onBeforeUnmount, onMounted } from 'vue'
 
 const searchTerm = ref('')
+const inputRef = ref<HTMLInputElement | null>(null)
 const mode = ref<'search' | 'command' | 'clear'>('clear') // 当前模式
 
 const emit = defineEmits<{
@@ -10,21 +11,23 @@ const emit = defineEmits<{
   (e: 'clear'): void
 }>()
 
-// 使用watch监听searchTerm，改善响应性
-watch(searchTerm, (newValue) => {
-  if (newValue === '') {
-    mode.value = 'clear'
-    return emit('clear')
-  }
+watch(
+  () => searchTerm.value,
+  (newValue) => {
+    if (newValue === '') {
+      mode.value = 'clear'
+      return emit('clear')
+    }
 
-  if (newValue.startsWith('/')) {
-    mode.value = 'command'
-    emit('command', newValue)
-  } else {
-    mode.value = 'search'
-    emit('search', newValue)
+    if (newValue.startsWith('/')) {
+      mode.value = 'command'
+      emit('command', newValue)
+    } else {
+      mode.value = 'search'
+      emit('search', newValue)
+    }
   }
-})
+)
 
 function handleEnter() {
   if (mode.value === 'search') {
@@ -47,16 +50,15 @@ function handleKeydown(e: KeyboardEvent) {
   }
   // Ctrl+/ 聚焦到搜索框
   if ((e.ctrlKey || e.metaKey) && e.key === '/') {
-    const inputEl = document.querySelector('.search-input') as HTMLInputElement
-    if (inputEl) {
-      inputEl.focus()
-    }
+    inputRef.value?.focus()
   }
 }
 
 // 注册全局键盘事件
-window.addEventListener('keydown', handleKeydown)
-
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+  inputRef.value?.focus()
+})
 // 组件卸载时清理事件监听
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)
@@ -72,10 +74,11 @@ defineExpose({
   <div class="relative w-full flex">
     <!-- 搜索输入框 -->
     <input
+      ref="inputRef"
       v-model="searchTerm"
       type="text"
       placeholder="搜索或输入命令 (以 / 开头)"
-      class="search-input w-full px-4 py-3 border border-transparent outline-none text-gray-700 bg-white/80"
+      class="search-input w-full px-4 py-3 border border-transparent outline-none text-gray-700 bg-white/90"
       aria-label="搜索框"
       @keyup.enter="handleEnter"
     />
