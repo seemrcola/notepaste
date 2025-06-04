@@ -43,6 +43,8 @@ pnpm build:mac
 #### 数据库存储地址
 - Windows: %APPDATA%/notepaste
 - macOS: ~/Library/Application Support/notepaste
-- Linux: ~/.config/notepaste  
+- Linux: ~/.config/notepaste   
+
+数据库名称 `snippets.db`  数据库类型 `sqlite`  
 
 用户可以在这里找到自己创建的代码片段/文本片段。使用数据库软件，如navicat，来查看/修改数据库内容。
