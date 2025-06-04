@@ -51,7 +51,7 @@ function createHotKeys(db: Database) {
     // 如果searchHotkey存在，则不处理 如果不存在，则插入
     const searchHotkey = db
       .prepare('SELECT COUNT(*) as count FROM hotkeys WHERE name = ?')
-      .get() as {
+      .get('searchHotkey') as {
       count: number
     }
     if (searchHotkey.count === 0) {
