@@ -112,7 +112,7 @@ function handleClickOutside(event: MouseEvent) {
 
 // 调整窗口大小
 function resizeWindow() {
-  let size = { width: 480, height: 100 }
+  let size = { width: 480, height: 80 }
   if (isResultDropdownOpen.value) size = { width: 480, height: 500 }
   if (isCommandDropdownOpen.value) size = { width: 480, height: 320 }
 

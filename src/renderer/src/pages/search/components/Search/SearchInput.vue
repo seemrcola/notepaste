@@ -131,6 +131,5 @@ defineExpose({
 <style scoped>
 .search-input {
   backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
 }
 </style>

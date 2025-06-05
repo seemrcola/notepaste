@@ -19,7 +19,7 @@ function createWindow(): void {
     width: 480, // 宽度
     height: 100, // 高度
     x: (width - 480) / 2, // 初始x坐标
-    y: 100, // 初始y坐标
+    y: 80, // 初始y坐标
     resizable: false,
     show: false, // 是否显示
     frame: false, // 是否显示边框
