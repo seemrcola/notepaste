@@ -1,5 +1,5 @@
 import { ipcMain, IpcMainInvokeEvent, BrowserWindow } from 'electron'
-import * as query from '../db/query'
+import * as query from './query'
 import { Database } from 'better-sqlite3'
 import { exportAllToCSV } from './export'
 
