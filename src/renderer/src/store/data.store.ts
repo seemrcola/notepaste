@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { useIpcStore, IpcDbApi } from './ipc.store'
 import type { CATEGORY, SNIPPET } from '@renderer/type.d'
+import { message } from '@renderer/components/ui/message'
 
 export const useDataStore = defineStore('data', () => {
   // State
@@ -9,6 +10,7 @@ export const useDataStore = defineStore('data', () => {
   const snippets = ref<SNIPPET[]>([])
   const currentCategory = ref<CATEGORY | null>(null)
   const currentSnippet = ref<SNIPPET | null>(null)
+  const isEditMode = ref(false)
   const ipcStore = useIpcStore()
 
   // ########################### 分类 ###########################
@@ -63,6 +65,15 @@ export const useDataStore = defineStore('data', () => {
     await ipcStore[IpcDbApi.SQL](`DELETE FROM categories WHERE id = ?`, 'del', [id])
     // 刷新分类
     await getAllCategories('del', id)
+  }
+
+  // 变更当前分类
+  function setCurrentCategory(category: CATEGORY) {
+    if (isEditMode.value) {
+      message.error('编辑模式下不可切换分类')
+      return
+    }
+    currentCategory.value = category
   }
 
   // ########################### 代码片段 ###########################
@@ -161,24 +172,56 @@ export const useDataStore = defineStore('data', () => {
     await getAllSnippets(currentCategory.value?.id as number, 'del')
   }
 
+  // 设置当前代码片段
+  function setCurrentSnippet(snippet: SNIPPET) {
+    if (isEditMode.value) {
+      message.error('编辑模式下不可切换代码片段')
+      return
+    }
+    currentSnippet.value = snippet
+  }
+
+  // 退出编辑模式
+  function exitEditMode() {
+    isEditMode.value = false
+  }
+
+  // 进入编辑模式
+  function enterEditMode() {
+    isEditMode.value = true
+  }
+
+  // 切换编辑模式
+  function toggleEditMode() {
+    isEditMode.value = !isEditMode.value
+  }
+
   // 返回 state 和 actions
   return {
-    // State
+    // ########################### State ###########################
     categories,
     snippets,
     currentCategory,
     currentSnippet,
-
-    // Actions
+    isEditMode,
+    // ########################### Actions ###########################
+    // ########################### 分类 #############################
     getAllCategories,
     addCategory,
     updateCategory,
     deleteCategory,
+    setCurrentCategory,
+    // ########################### 代码片段 ###########################
     getAllSnippets,
     addSnippet,
     searchSnippets,
     deleteSnippet,
     updateSnippet,
-    moveSnippetToCategory
+    moveSnippetToCategory,
+    setCurrentSnippet,
+    // ########################### 编辑模式 ###########################
+    exitEditMode,
+    enterEditMode,
+    toggleEditMode
   }
 })

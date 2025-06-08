@@ -21,9 +21,6 @@ const showOptions = ref(false)
 // 是否处于全屏模式
 const isFullscreen = ref(false)
 
-// 是否处于编辑模式
-const isEditMode = ref(false)
-
 // 编辑器字体大小
 const fontSize = ref(12)
 
@@ -70,7 +67,7 @@ function toggleFullscreen() {
 
 // 切换编辑模式
 function toggleEditMode() {
-  if (!isEditMode.value) {
+  if (!dataStore.isEditMode) {
     // 进入编辑模式，初始化编辑内容
     editingCode.value = dataStore.currentSnippet?.code || ''
   } else {
@@ -78,7 +75,7 @@ function toggleEditMode() {
     dataStore.updateSnippet(dataStore.currentSnippet?.id as number, editingCode.value)
     message.success('保存成功')
   }
-  isEditMode.value = !isEditMode.value
+  dataStore.toggleEditMode()
 }
 
 // 切换背景主题
@@ -89,7 +86,7 @@ function changeBackgroundTheme(themeId: string) {
 // 复制代码到剪贴板
 async function copyCode() {
   // 编辑模式下不触发复制
-  if (isEditMode.value || !dataStore.currentSnippet?.code) return
+  if (dataStore.isEditMode || !dataStore.currentSnippet?.code) return
 
   try {
     await navigator.clipboard.writeText(dataStore.currentSnippet?.code || '')
@@ -106,7 +103,7 @@ async function copyCode() {
 
 // 处理代码容器点击
 function handleCodeContainerClick() {
-  if (!isEditMode.value) {
+  if (!dataStore.isEditMode) {
     copyCode()
   }
 }
@@ -128,7 +125,7 @@ const textColorClass = computed(() => {
 
 // 获取显示的代码内容
 const displayCode = computed(() => {
-  return isEditMode.value ? editingCode.value : dataStore.currentSnippet?.code || ''
+  return dataStore.isEditMode ? editingCode.value : dataStore.currentSnippet?.code || ''
 })
 </script>
 
@@ -147,7 +144,7 @@ const displayCode = computed(() => {
         </div>
         <!-- 编辑模式指示器 -->
         <div
-          v-if="isEditMode"
+          v-if="dataStore.isEditMode"
           class="!ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium"
         >
           编辑中
@@ -176,14 +173,14 @@ const displayCode = computed(() => {
         <button
           class="editor-button p-2 rounded-lg transition-all duration-200"
           :class="
-            isEditMode
+            dataStore.isEditMode
               ? 'bg-green-100 text-green-700 hover:bg-green-200'
               : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
           "
-          :title="isEditMode ? '退出编辑模式' : '进入编辑模式'"
+          :title="dataStore.isEditMode ? '退出编辑模式' : '进入编辑模式'"
           @click="toggleEditMode"
         >
-          <EditSvg v-if="!isEditMode" />
+          <EditSvg v-if="!dataStore.isEditMode" />
           <CheckSvg v-else />
         </button>
       </div>
@@ -257,8 +254,12 @@ const displayCode = computed(() => {
     <main class="flex-1 overflow-hidden relative">
       <div
         class="code-container h-full overflow-auto p-4 font-mono transition-colors duration-300 relative group"
-        :class="[currentThemeClass, textColorClass, isEditMode ? 'cursor-text' : 'cursor-pointer']"
-        :title="isEditMode ? '编辑模式' : '点击复制代码'"
+        :class="[
+          currentThemeClass,
+          textColorClass,
+          dataStore.isEditMode ? 'cursor-text' : 'cursor-pointer'
+        ]"
+        :title="dataStore.isEditMode ? '编辑模式' : '点击复制代码'"
         @click="handleCodeContainerClick"
       >
         <!-- 复制提示 -->
@@ -272,7 +273,7 @@ const displayCode = computed(() => {
 
         <!-- 悬停提示 -->
         <div
-          v-if="!isEditMode"
+          v-if="!dataStore.isEditMode"
           class="absolute top-4 right-4 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center space-x-2"
           :class="{ hidden: isCopied }"
         >
@@ -282,7 +283,7 @@ const displayCode = computed(() => {
 
         <!-- 编辑模式提示 -->
         <div
-          v-if="isEditMode"
+          v-if="dataStore.isEditMode"
           class="absolute top-4 right-4 bg-green-500 bg-opacity-90 text-white px-3 py-2 rounded-lg shadow-lg z-10 flex items-center space-x-2"
         >
           <EditSvg />
@@ -291,7 +292,7 @@ const displayCode = computed(() => {
 
         <!-- 代码编辑区域 -->
         <textarea
-          v-if="isEditMode"
+          v-if="dataStore.isEditMode"
           v-model="editingCode"
           class="code-editor w-full h-full resize-none border-none outline-none bg-transparent leading-relaxed"
           :style="{ fontSize: `${fontSize}px` }"

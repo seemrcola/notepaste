@@ -25,13 +25,31 @@ const newSnippet = ref({
 // 拖拽的片段
 const dragSnippet = ref<SNIPPET | null>(null)
 
+// 检查是否处于编辑模式
+function checkEditMode() {
+  if (dataStore.isEditMode) {
+    message.error('请先退出编辑模式再进行操作')
+    return ['error']
+  }
+  return [null, 'success']
+}
+
 // 处理片段选择
 function handleSelectSnippet(index: number) {
-  dataStore.currentSnippet = dataStore.snippets[index]
+  const [error] = checkEditMode()
+  if (error) return
+
+  const snippet = dataStore.snippets[index]
+  if (snippet) {
+    dataStore.setCurrentSnippet(snippet)
+  }
 }
 
 // 处理添加片段按钮点击
 function handleAddClick() {
+  const [error] = checkEditMode()
+  if (error) return
+
   showAddForm.value = true
 }
 
@@ -43,6 +61,9 @@ function handleCancelAdd() {
 
 // 处理添加片段
 function handleAddSnippet() {
+  const [error] = checkEditMode()
+  if (error) return
+
   if (newSnippet.value.name.trim()) {
     if (dataStore.currentCategory) {
       dataStore.addSnippet(newSnippet.value)
@@ -58,6 +79,9 @@ function handleAddSnippet() {
 
 // 处理搜索
 async function handleSearch() {
+  const [error] = checkEditMode()
+  if (error) return
+
   await dataStore.searchSnippets(searchQuery.value)
 }
 
