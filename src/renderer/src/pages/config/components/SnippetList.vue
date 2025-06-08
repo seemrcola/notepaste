@@ -48,6 +48,8 @@ function handleAddSnippet() {
       dataStore.addSnippet(newSnippet.value)
       message.success('添加代码片段成功')
       handleCancelAdd()
+    } else {
+      message.error('请先选择一个分类 或 新建一个分类')
     }
     return
   }
