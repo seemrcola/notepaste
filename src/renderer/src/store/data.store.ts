@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { useIpcStore, IpcDbApi } from './ipc.store'
 import type { CATEGORY, SNIPPET } from '@renderer/type.d'
-import { message } from '@renderer/components/ui/message'
 
 export const useDataStore = defineStore('data', () => {
   // State
@@ -15,12 +14,15 @@ export const useDataStore = defineStore('data', () => {
 
   // ########################### 分类 ###########################
   // 获取所有分类
-  const getAllCategories = async (
+  async function getAllCategories(
     mode: 'init' | 'add' | 'del' | 'update' = 'init',
     id?: string | number
-  ) => {
+  ) {
     const result = await ipcStore[IpcDbApi.SQL](`SELECT * FROM categories`, 'findAll', [])
     categories.value = result as CATEGORY[]
+
+    // 退出编辑模式
+    exitEditMode()
 
     if (mode === 'init') currentCategory.value = categories.value[0] || null
     if (mode === 'add') {
@@ -41,7 +43,7 @@ export const useDataStore = defineStore('data', () => {
   }
 
   // 添加分类
-  const addCategory = async (name: string) => {
+  async function addCategory(name: string) {
     // 添加分类
     await ipcStore[IpcDbApi.SQL](`INSERT INTO categories (name) VALUES (?)`, 'insert', [name])
     // 刷新分类
@@ -49,7 +51,7 @@ export const useDataStore = defineStore('data', () => {
   }
 
   // 编辑分类【名称】
-  const updateCategory = async (id: number, name: string) => {
+  async function updateCategory(id: number, name: string) {
     await ipcStore[IpcDbApi.SQL](`UPDATE categories SET name = ? WHERE id = ?`, 'update', [
       name,
       id
@@ -58,7 +60,7 @@ export const useDataStore = defineStore('data', () => {
   }
 
   // 删除分类
-  const deleteCategory = async (id: number) => {
+  async function deleteCategory(id: number) {
     // 删除分类下的所有代码片段
     await ipcStore[IpcDbApi.SQL](`DELETE FROM snippets WHERE categoryId = ?`, 'del', [id])
     // 删除分类
@@ -69,11 +71,8 @@ export const useDataStore = defineStore('data', () => {
 
   // 变更当前分类
   function setCurrentCategory(category: CATEGORY) {
-    if (isEditMode.value) {
-      message.error('编辑模式下不可切换分类')
-      return
-    }
     currentCategory.value = category
+    exitEditMode()
   }
 
   // ########################### 代码片段 ###########################
@@ -89,18 +88,21 @@ export const useDataStore = defineStore('data', () => {
   )
 
   // 获取所有代码片段
-  const getAllSnippets = async (
+  async function getAllSnippets(
     id: number,
     mode: 'add' | 'update' | 'del' | 'init' = 'init',
     updateId = 0
-  ) => {
+  ) {
     const result = await ipcStore[IpcDbApi.SQL](
       `SELECT * FROM snippets WHERE categoryId = ?`,
       'findAll',
       [id]
     )
-    console.log(result, 'result')
     snippets.value = result as SNIPPET[]
+
+    // 退出编辑模式
+    exitEditMode()
+
     if (mode === 'init' || mode === 'del') {
       currentSnippet.value = snippets.value[0] || null
     }
@@ -113,13 +115,33 @@ export const useDataStore = defineStore('data', () => {
     }
   }
 
+  // 搜索代码片段
+  async function searchSnippets(query: string) {
+    // 如果搜索内容为空，则获取所有代码片段
+    if (!query) {
+      await getAllSnippets(currentCategory.value?.id as number, 'add')
+      return
+    }
+    // 如果搜索内容不为空，则搜索代码片段
+    const result = await ipcStore[IpcDbApi.SQL](
+      `SELECT * FROM snippets WHERE name LIKE ? OR code LIKE ? AND categoryId = ?`,
+      'findAll',
+      [`%${query}%`, `%${query}%`, currentCategory.value?.id]
+    )
+    snippets.value = result as SNIPPET[]
+    // 退出编辑模式
+    exitEditMode()
+    // 设置当前代码片段为第一个
+    currentSnippet.value = snippets.value[0] || null
+  }
+
   // 添加代码片段
-  const addSnippet = async (insertSnippet: {
+  async function addSnippet(insertSnippet: {
     name: string
     code: string
     language: string
     description: string
-  }) => {
+  }) {
     // 添加代码片段
     await ipcStore[IpcDbApi.SQL](
       `INSERT INTO snippets (name, code, language, description, categoryId) VALUES (?, ?, ?, ?, ?)`,
@@ -136,34 +158,20 @@ export const useDataStore = defineStore('data', () => {
     await getAllSnippets(currentCategory.value?.id as number, 'add')
   }
 
-  // 搜索代码片段
-  const searchSnippets = async (query: string) => {
-    if (!query) {
-      await getAllSnippets(currentCategory.value?.id as number, 'add')
-      return
-    }
-    const result = await ipcStore[IpcDbApi.SQL](
-      `SELECT * FROM snippets WHERE name LIKE ? OR code LIKE ?`,
-      'findAll',
-      [`%${query}%`, `%${query}%`]
-    )
-    snippets.value = result as SNIPPET[]
-  }
-
   // 删除代码片段
-  const deleteSnippet = async (id: number) => {
+  async function deleteSnippet(id: number) {
     await ipcStore[IpcDbApi.SQL](`DELETE FROM snippets WHERE id = ?`, 'del', [id])
     await getAllSnippets(currentCategory.value?.id as number, 'del')
   }
 
   // 编辑代码片段【代码】
-  const updateSnippet = async (id: number, code: string) => {
+  async function updateSnippet(id: number, code: string) {
     await ipcStore[IpcDbApi.SQL](`UPDATE snippets SET code = ? WHERE id = ?`, 'update', [code, id])
     await getAllSnippets(currentCategory.value?.id as number, 'update', id)
   }
 
   // 移动代码片段到其他分类
-  const moveSnippetToCategory = async (snippetId: number, newCategoryId: number) => {
+  async function moveSnippetToCategory(snippetId: number, newCategoryId: number) {
     await ipcStore[IpcDbApi.SQL](`UPDATE snippets SET categoryId = ? WHERE id = ?`, 'update', [
       newCategoryId,
       snippetId
@@ -174,12 +182,11 @@ export const useDataStore = defineStore('data', () => {
 
   // 设置当前代码片段
   function setCurrentSnippet(snippet: SNIPPET) {
-    if (isEditMode.value) {
-      message.error('编辑模式下不可切换代码片段')
-      return
-    }
     currentSnippet.value = snippet
+    exitEditMode()
   }
+
+  // ########################### 其他 ###########################
 
   // 退出编辑模式
   function exitEditMode() {

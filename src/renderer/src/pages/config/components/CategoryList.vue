@@ -26,15 +26,6 @@ const originalCategoryName = ref('')
 // 拖拽相关状态
 const dragOverCategoryId = ref<number | null>(null)
 
-// 检查是否处于编辑模式
-function checkEditMode() {
-  if (dataStore.isEditMode) {
-    message.error('请先退出编辑模式再进行操作')
-    return ['error']
-  }
-  return [null, 'success']
-}
-
 // 点击外部关闭下拉菜单
 function handleClickOutside(event: MouseEvent) {
   const target = event.target as HTMLElement
@@ -45,9 +36,6 @@ function handleClickOutside(event: MouseEvent) {
 
 // 处理添加分类按钮点击
 function handleAddClick() {
-  const [error] = checkEditMode()
-  if (error) return
-
   showAddForm.value = true
   // 自动聚焦输入框
   setTimeout(() => {
@@ -66,9 +54,6 @@ function handleCancelAdd() {
 
 // 添加分类
 async function handleAddCategory() {
-  const [error] = checkEditMode()
-  if (error) return
-
   if (newCategoryName.value.trim()) {
     await dataStore.addCategory(newCategoryName.value.trim())
     message.success('添加分类成功')
@@ -141,9 +126,6 @@ async function handleDeleteCategory(id: number, name: string) {
 }
 
 function handleSelectCategory(index: number) {
-  const [error] = checkEditMode()
-  if (error) return
-
   const category = dataStore.categories[index]
   dataStore.setCurrentCategory(category)
 }
