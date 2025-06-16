@@ -121,10 +121,6 @@ defineExpose({
         />
       </svg>
     </button>
-    <!-- 键盘快捷键提示 -->
-    <div class="absolute -bottom-6 right-0 text-xs text-gray-400">
-      <span>Ctrl+/ 聚焦 | ESC 清空</span>
-    </div>
   </div>
 </template>
 

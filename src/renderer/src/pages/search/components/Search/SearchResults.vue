@@ -42,7 +42,7 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="dropdown mt-2 w-full bg-gray-800 border border-gray-600 shadow-lg overflow-hidden max-h-[400px] overflow-y-auto dropdown-animation"
+    class="dropdown mt-2 w-full bg-white/90 backdrop-blur-sm border border-gray-200 shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto dropdown-animation"
     role="listbox"
     aria-label="搜索结果列表"
   >
@@ -50,15 +50,15 @@ onUnmounted(() => {
       <li
         v-for="(item, index) in props.items"
         :key="item.id"
-        :class="curIndex === index ? 'bg-gray-700 border-l-blue-400' : ''"
-        class="p-4 cursor-pointer transition-all duration-200 border-b border-gray-600 last:border-b-0 hover:bg-gray-700 border-l-4 border-l-transparent"
+        :class="curIndex === index ? 'bg-blue-50 border-l-blue-400' : ''"
+        class="p-4 cursor-pointer transition-all duration-200 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 border-l-4 border-l-transparent"
         role="option"
         :aria-selected="curIndex === index"
         tabindex="0"
         @click="handleClick(item)"
       >
-        <div class="font-semibold text-gray-100 mb-1">{{ item.name }}</div>
-        <div class="text-sm text-gray-300 truncate">{{ item.description }}</div>
+        <div class="font-semibold text-gray-800 mb-1">{{ item.name }}</div>
+        <div class="text-sm text-gray-500 truncate">{{ item.description }}</div>
       </li>
     </ul>
   </div>
@@ -85,17 +85,17 @@ onUnmounted(() => {
   overflow-y: auto;
 }
 
-/* 暗色主题滚动条样式 */
+/* 浅色主题滚动条样式 */
 .dropdown::-webkit-scrollbar {
   width: 8px;
 }
 
 .dropdown::-webkit-scrollbar-track {
-  background-color: #374151;
+  background-color: #f9fafb;
 }
 
 .dropdown::-webkit-scrollbar-thumb {
-  background-color: #6b7280;
+  background-color: #d1d5db;
   border-radius: 4px;
 }
 
