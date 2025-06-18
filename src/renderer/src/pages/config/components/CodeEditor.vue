@@ -340,10 +340,6 @@ const displayCode = computed(() => {
   line-height: 1.8;
 }
 
-.code-container:hover {
-  background-color: rgba(59, 130, 246, 0.02);
-}
-
 .code-editor {
   width: 100%;
   height: 100%;
