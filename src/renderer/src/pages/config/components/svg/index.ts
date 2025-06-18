@@ -1,5 +1,6 @@
 export { default as AddCategorySvg } from './add-category.vue'
 export { default as AddSvg } from './add.vue'
+export { default as CategoryListSvg } from './category-list.vue'
 export { default as CheckSvg } from './check.vue'
 export { default as CloseSvg } from './close.vue'
 export { default as CodeSvg } from './code.vue'

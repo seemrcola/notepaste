@@ -138,7 +138,7 @@ const displayCode = computed(() => {
       <div class="flex items-center">
         <h2 class="text-sm !font-semibold text-gray-900">代码编辑器</h2>
         <div
-          class="language-badge !ml-4 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+          class="language-badge !ml-4 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium"
         >
           {{ dataStore.currentSnippet?.language }}
         </div>
@@ -157,7 +157,7 @@ const displayCode = computed(() => {
           title="编辑器选项"
           @click="toggleOptions"
         >
-          <SettingsSvg />
+          <SettingsSvg class="w-4 h-4" />
         </button>
 
         <button
@@ -165,8 +165,8 @@ const displayCode = computed(() => {
           :title="isFullscreen ? '退出全屏' : '全屏模式'"
           @click="toggleFullscreen"
         >
-          <FullscreenSvg v-if="!isFullscreen" />
-          <ExitFullscreenSvg v-else />
+          <FullscreenSvg v-if="!isFullscreen" class="w-4 h-4" />
+          <ExitFullscreenSvg v-else class="w-4 h-4" />
         </button>
 
         <!-- 编辑模式切换按钮 -->
@@ -180,8 +180,8 @@ const displayCode = computed(() => {
           :title="dataStore.isEditMode ? '退出编辑模式' : '进入编辑模式'"
           @click="toggleEditMode"
         >
-          <EditSvg v-if="!dataStore.isEditMode" />
-          <CheckSvg v-else />
+          <EditSvg v-if="!dataStore.isEditMode" class="w-4 h-4" />
+          <CheckSvg v-else class="w-4 h-4" />
         </button>
       </div>
     </header>
@@ -202,7 +202,7 @@ const displayCode = computed(() => {
               :disabled="fontSize <= 10"
               @click="decreaseFontSize"
             >
-              <MinusSvg />
+              <MinusSvg class="w-4 h-4" />
             </button>
 
             <span class="text-xs font-bold text-gray-800 !min-w-[24px] text-center px-1">
@@ -214,7 +214,7 @@ const displayCode = computed(() => {
               :disabled="fontSize >= 24"
               @click="increaseFontSize"
             >
-              <PlusSvg />
+              <PlusSvg class="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -267,7 +267,7 @@ const displayCode = computed(() => {
           v-if="isCopied"
           class="absolute top-4 right-4 bg-green-500 text-white px-3 py-2 rounded-lg shadow-lg z-10 flex items-center space-x-2 animate-fade-in"
         >
-          <CheckSvg />
+          <CheckSvg class="w-4 h-4 !mr-2" />
           <span class="text-sm font-medium">已复制到剪贴板</span>
         </div>
 
@@ -277,7 +277,7 @@ const displayCode = computed(() => {
           class="absolute top-4 right-4 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg shadow-lg z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center space-x-2"
           :class="{ hidden: isCopied }"
         >
-          <CopySvg />
+          <CopySvg class="w-4 h-4 !mr-2" />
           <span class="text-sm">点击复制</span>
         </div>
 
@@ -286,7 +286,7 @@ const displayCode = computed(() => {
           v-if="dataStore.isEditMode"
           class="absolute top-4 right-4 bg-green-500 bg-opacity-90 text-white px-3 py-2 rounded-lg shadow-lg z-10 flex items-center space-x-2"
         >
-          <EditSvg />
+          <EditSvg class="w-4 h-4 !mr-2" />
           <span class="text-sm">编辑模式</span>
         </div>
 
@@ -312,7 +312,7 @@ const displayCode = computed(() => {
       <div class="flex items-center space-x-4">
         <span>{{ lineCount }} </span>
         <span class="!mx-2 text-gray-500">行</span>
-        <span class="px-2 py-1 bg-amber-200 rounded-md">
+        <span class="px-2 py-1 bg-amber-200 rounded-md text-xs">
           {{ dataStore.currentSnippet?.language }}
         </span>
       </div>

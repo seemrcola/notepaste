@@ -113,13 +113,21 @@ function handleDragEnd(event: DragEvent) {
 </script>
 
 <template>
-  <div class="h-full flex flex-col bg-blue-50/50 p-2">
+  <div class="h-full flex flex-col bg-blue-50/50 p-2 text-gray-500">
     <!-- 头部 -->
     <div class="flex-shrink-0 px-2 border-gray-200">
       <div class="flex items-center justify-between !mb-3">
-        <h2 class="text-sm !font-semibold text-gray-900">代码片段</h2>
+        <div class="flex items-center gap-2">
+          <!-- 标题图标 -->
+          <div
+            class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-sm flex items-center justify-center"
+          >
+            <CodeSvg class="w-5 h-5 text-white" />
+          </div>
+          <h2 class="text-sm !font-semibold text-gray-900">代码片段</h2>
+        </div>
         <button
-          class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors duration-200"
+          class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm rounded-full hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 font-medium"
           @click="handleAddClick"
         >
           + 新建
@@ -135,13 +143,13 @@ function handleDragEnd(event: DragEvent) {
           class="w-full pl-8 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           @keyup.enter="handleSearch"
         />
-        <SearchSvg />
+        <SearchSvg class="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
         <button
           v-if="searchQuery"
           class="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
           @click="clearSearch"
         >
-          <CloseSvg />
+          <CloseSvg class="w-4 h-4 text-gray-400" />
         </button>
       </div>
     </div>
@@ -152,13 +160,13 @@ function handleDragEnd(event: DragEvent) {
         class="add-snippet-card bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden"
       >
         <div class="flex items-center p-3 bg-blue-50">
-          <AddSvg />
+          <AddSvg class="w-4 h-4 text-blue-700 !mr-1" />
           <h3 class="font-medium text-sm text-blue-700">新建代码片段</h3>
           <button
             class="!ml-auto p-1 text-blue-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
             @click="handleCancelAdd"
           >
-            <CloseSvg />
+            <CloseSvg class="w-4 h-4 text-blue-400" />
           </button>
         </div>
 
@@ -207,7 +215,7 @@ function handleDragEnd(event: DragEvent) {
 
         <div class="flex justify-between p-3 bg-gray-50 border-t border-gray-100">
           <button
-            class="flex-1 px-3 py-2 rounded-md text-gray-600 hover:bg-gray-200 transition-colors text-sm"
+            class="flex-1 px-3 py-2 rounded-full text-gray-600 hover:bg-gray-200 transition-all duration-200 text-sm font-medium"
             @click="handleCancelAdd"
           >
             取消
@@ -215,7 +223,7 @@ function handleDragEnd(event: DragEvent) {
           <div class="w-4"></div>
           <button
             :disabled="!newSnippet.name.trim()"
-            class="flex-1 px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex-1 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm hover:shadow-md transform hover:scale-105 disabled:transform-none"
             @click="handleAddSnippet"
           >
             添加
@@ -265,7 +273,7 @@ function handleDragEnd(event: DragEvent) {
           <!-- 删除按钮 -->
           <div class="tool-button">
             <DeleteSvg
-              class="scale-80 cursor-pointer"
+              class="w-7 h-7 cursor-pointer"
               @click="handleDeleteSnippet(snippet.id, snippet.name)"
             />
           </div>
@@ -274,10 +282,10 @@ function handleDragEnd(event: DragEvent) {
 
       <!-- 空状态 -->
       <div v-else class="flex flex-col items-center justify-center h-full text-gray-500 py-12">
-        <CodeSvg />
+        <CodeSvg class="w-10 h-10" />
         <p class="text-sm">没有找到代码片段</p>
         <button
-          class="!mt-4 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+          class="!mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm rounded-full hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 font-medium"
           @click="handleAddClick"
         >
           创建第一个片段
@@ -355,6 +363,17 @@ function handleDragEnd(event: DragEvent) {
 
 .snippet-item:hover .tool-button {
   opacity: 1;
+}
+
+@keyframes pulse-border {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
 }
 
 @keyframes slide-down {

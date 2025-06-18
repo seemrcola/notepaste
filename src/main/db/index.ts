@@ -9,10 +9,10 @@ function initDb() {
   // Windows: %APPDATA%/notepaste
   // macOS: ~/Library/Application Support/notepaste
   // Linux: ~/.config/notepaste
-  const dbPath = resolve(app.getPath('userData'), 'snippets.db')
+  // const dbPath = resolve(app.getPath('userData'), 'snippets.db')
 
   // 测试环境下使用桌面
-  // const dbPath = resolve(app.getPath('desktop'), 'snippets.db')
+  const dbPath = resolve(app.getPath('desktop'), 'snippets.db')
 
   const db: BetterSqlite3.Database = new Database(dbPath, {
     fileMustExist: false // 文件不存在的时候不会报错

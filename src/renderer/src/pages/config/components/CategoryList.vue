@@ -5,7 +5,15 @@ import { confirm } from '@renderer/components/ui/confirm'
 import type { CATEGORY } from '@renderer/type.d'
 import { useDataStore } from '@renderer/store/data.store'
 import { useIpcStore, IpcDbApi } from '@renderer/store/ipc.store'
-import { AddCategorySvg, AddSvg, DeleteSvg, CloseSvg, FolderSvg, ExportSvg } from './svg'
+import {
+  AddCategorySvg,
+  AddSvg,
+  DeleteSvg,
+  CloseSvg,
+  FolderSvg,
+  ExportSvg,
+  CategoryListSvg
+} from './svg'
 const ipcStore = useIpcStore()
 const dataStore = useDataStore()
 
@@ -208,7 +216,15 @@ onUnmounted(() => {
 <template>
   <div class="h-full w-full text-gray-700 flex flex-col">
     <header class="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
-      <h2 class="text-sm !font-bold">分类列表</h2>
+      <div class="flex items-center gap-2">
+        <!-- 标题图标 -->
+        <div
+          class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-sm"
+        >
+          <CategoryListSvg class="w-5 h-5 text-white" />
+        </div>
+        <h2 class="text-sm !font-bold">分类列表</h2>
+      </div>
       <div class="flex items-center gap-2">
         <!-- 导出下拉菜单 -->
         <div class="relative">
@@ -249,7 +265,7 @@ onUnmounted(() => {
         class="add-category-card bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden"
       >
         <div class="flex items-center p-3 bg-blue-50">
-          <AddSvg />
+          <AddSvg class="w-4 h-4 text-blue-700 !mr-1" />
           <h3 class="font-medium text-sm text-blue-700">添加新分类</h3>
           <button
             class="!ml-auto p-1 text-blue-400 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
@@ -294,7 +310,7 @@ onUnmounted(() => {
         v-if="dataStore.categories.length === 0"
         class="flex flex-col items-center justify-center h-full text-gray-500 py-12"
       >
-        <FolderSvg />
+        <FolderSvg class="w-16 h-16" />
         <p class="text-sm">先添加分类才能添加片段</p>
         <button
           class="!mt-4 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
@@ -352,7 +368,7 @@ onUnmounted(() => {
           <div class="tool-button">
             <!-- <AddSvg class="scale-80 cursor-pointer" /> -->
             <DeleteSvg
-              class="scale-80 cursor-pointer"
+              class="w-7 h-7 cursor-pointer"
               @click.stop="handleDeleteCategory(item.id, item.name)"
             />
           </div>
@@ -434,6 +450,17 @@ onUnmounted(() => {
 
 .category-item:hover .tool-button {
   opacity: 1;
+}
+
+@keyframes pulse-border {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
 }
 
 .add-button {

@@ -1,10 +1,5 @@
 <template>
-  <svg
-    class="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
+  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path
       stroke-linecap="round"
       stroke-linejoin="round"
